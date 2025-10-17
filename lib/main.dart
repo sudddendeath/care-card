@@ -19,9 +19,12 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AuthModel()),
         ChangeNotifierProvider(create: (context) => RegistrationModel()),
-        ChangeNotifierProvider(create: (context) => AccessibilitySettingsModel()),
+        ChangeNotifierProvider(
+          create: (context) => AccessibilitySettingsModel(),
+        ),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Care Card',
         theme: ThemeData(
           useMaterial3: true,
@@ -67,7 +70,9 @@ class MyApp extends StatelessWidget {
         ),
         home: Consumer<AuthModel>(
           builder: (context, auth, child) {
-            return auth.isAuthenticated ? const HomePage() : const LoginScreen();
+            return auth.isAuthenticated
+                ? const HomePage()
+                : const LoginScreen();
           },
         ),
       ),

@@ -14,6 +14,15 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
   final _detailsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+  final List<String> _selectedCategories = [];
+
+  final List<String> _categories = [
+    'Harassment',
+    'Abuse',
+    'Neglect',
+    'Scam',
+    'Other',
+  ];
 
   @override
   void dispose() {
@@ -50,6 +59,12 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
 
   void _submitReport() {
     if (_formKey.currentState!.validate()) {
+      if (_selectedCategories.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select at least one category.')),
+        );
+        return;
+      }
       // TODO: Implement report submission logic
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Incident report submitted.')),
@@ -58,6 +73,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
       setState(() {
         _selectedDate = DateTime.now();
         _selectedTime = TimeOfDay.now();
+        _selectedCategories.clear();
       });
     }
   }
@@ -89,24 +105,47 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
+                    Text('Category', style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8.0,
+                      children: _categories.map((category) {
+                        return FilterChip(
+                          label: Text(category),
+                          selected: _selectedCategories.contains(category),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedCategories.add(category);
+                              } else {
+                                _selectedCategories.remove(category);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
-                      controller: _locationController,
-                      decoration: const InputDecoration(labelText: 'Location'),
+                      controller: _detailsController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
+                      maxLines: 5,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a location.';
+                          return 'Please describe the incident.';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      controller: _detailsController,
-                      decoration: const InputDecoration(labelText: 'Description'),
-                      maxLines: 5,
+                      controller: _locationController,
+                      decoration: const InputDecoration(labelText: 'Location'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please describe the incident.';
+                          return 'Please enter a location.';
                         }
                         return null;
                       },

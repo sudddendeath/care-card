@@ -10,13 +10,19 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final _fullNameController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
+    _fullNameController.dispose();
+    _phoneNumberController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -26,6 +32,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // TODO: Use the new fields (_fullNameController.text, _phoneNumberController.text) in your signup logic.
     final auth = Provider.of<AuthModel>(context, listen: false);
     try {
       await auth.signup(_emailController.text, _passwordController.text);
@@ -37,9 +44,9 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -48,9 +55,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign Up'),
-      ),
+      appBar: AppBar(title: const Text('Sign Up')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -72,6 +77,31 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 32),
                     TextFormField(
+                      controller: _fullNameController,
+                      decoration: const InputDecoration(labelText: 'Full Name'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your full name.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneNumberController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number',
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
@@ -85,8 +115,22 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: !_isPasswordVisible,
                       validator: (value) {
                         if (value == null || value.length < 6) {
                           return 'Password must be at least 6 characters.';
@@ -97,8 +141,23 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _confirmPasswordController,
-                      decoration: const InputDecoration(labelText: 'Confirm Password'),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isConfirmPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isConfirmPasswordVisible =
+                                  !_isConfirmPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: !_isConfirmPasswordVisible,
                       validator: (value) {
                         if (value != _passwordController.text) {
                           return 'Passwords do not match.';

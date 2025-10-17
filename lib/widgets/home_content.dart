@@ -78,9 +78,12 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget _buildRegistrationOption(
-    BuildContext context,
-      {required IconData icon, required String title, required String subtitle, required VoidCallback onTap,})
-       {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
