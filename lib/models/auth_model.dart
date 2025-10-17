@@ -21,10 +21,10 @@ class AuthModel extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> signup(String email, String password) async {
+  Future<bool> signup(String email, String password, String fullName, String phoneNumber) async {
     // Simulate API call and account creation
     await Future.delayed(const Duration(seconds: 1));
-    if (email.isNotEmpty && password.isNotEmpty) {
+    if (email.isNotEmpty && password.isNotEmpty && fullName.isNotEmpty && phoneNumber.isNotEmpty) {
       // In a real app, you'd save this to a backend
       return true;
     }

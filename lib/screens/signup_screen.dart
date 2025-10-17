@@ -35,7 +35,12 @@ class _SignupScreenState extends State<SignupScreen> {
     // TODO: Use the new fields (_fullNameController.text, _phoneNumberController.text) in your signup logic.
     final auth = Provider.of<AuthModel>(context, listen: false);
     try {
-      await auth.signup(_emailController.text, _passwordController.text);
+      await auth.signup(
+        _emailController.text,
+        _passwordController.text,
+        _fullNameController.text,
+        _phoneNumberController.text,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup successful! Please log in.')),
