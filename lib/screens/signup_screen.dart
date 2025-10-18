@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:logging/logging.dart';
 import '../models/auth_model.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -10,6 +12,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final _logger = Logger('SignupScreen');
   final _fullNameController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _emailController = TextEditingController();
@@ -18,6 +21,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -32,26 +36,59 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: Use the new fields (_fullNameController.text, _phoneNumberController.text) in your signup logic.
+    _logger.info('Signup button pressed');
+
+    setState(() {
+      _isLoading = true;
+    });
+
     final auth = Provider.of<AuthModel>(context, listen: false);
     try {
+      _logger.info('Calling auth.signup');
       await auth.signup(
         _emailController.text,
         _passwordController.text,
         _fullNameController.text,
         _phoneNumberController.text,
       );
+      _logger.info('auth.signup finished');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signup successful! Please log in.')),
+          const SnackBar(
+            content: Text(
+              'Signup successful! Check your email for verification.',
+            ),
+          ),
         );
         Navigator.of(context).pop();
       }
-    } catch (e) {
+    } on AuthException catch (e, stackTrace) {
+      _logger.severe('AuthException: ${e.message}', e, stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } on Exception catch (e, stackTrace) {
+      _logger.severe('Exception: $e', e, stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An unexpected error occurred: $e')),
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.severe('Unknown error: $e', e, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -172,8 +209,17 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: _signup,
-                      child: const Text('Create Account'),
+                      onPressed: _isLoading ? null : _signup,
+                      child: _isLoading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                            )
+                          : const Text('Create Account'),
                     ),
                   ],
                 ),

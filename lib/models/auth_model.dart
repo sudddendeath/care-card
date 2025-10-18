@@ -1,39 +1,51 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthModel extends ChangeNotifier {
-  bool _isAuthenticated = false;
-  String? _userEmail;
+  final SupabaseClient _supabase = Supabase.instance.client;
+  late final StreamSubscription<AuthState> _authStateSubscription;
+  User? _user;
 
-  bool get isAuthenticated => _isAuthenticated;
-  String? get userEmail => _userEmail;
+  bool get isAuthenticated => _user != null;
+  String? get userEmail => _user?.email;
+  User? get user => _user;
 
-  AuthModel();
-
-  Future<bool> login(String email, String password) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-    if (email.isNotEmpty && password.isNotEmpty) {
-      _isAuthenticated = true;
-      _userEmail = email;
+  AuthModel() {
+    _user = _supabase.auth.currentUser;
+    _authStateSubscription =
+        _supabase.auth.onAuthStateChange.listen((data) {
+      _user = data.session?.user;
       notifyListeners();
-      return true;
-    }
-    return false;
+    });
   }
 
-  Future<bool> signup(String email, String password, String fullName, String phoneNumber) async {
-    // Simulate API call and account creation
-    await Future.delayed(const Duration(seconds: 1));
-    if (email.isNotEmpty && password.isNotEmpty && fullName.isNotEmpty && phoneNumber.isNotEmpty) {
-      // In a real app, you'd save this to a backend
-      return true;
-    }
-    return false;
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
   }
 
-  void logout() {
-    _isAuthenticated = false;
-    _userEmail = null;
-    notifyListeners();
+  Future<void> login(String email, String password) async {
+    await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<void> signup(
+      String email, String password, String fullName, String phoneNumber) async {
+    await _supabase.auth.signUp(
+      email: email,
+      password: password,
+      data: {
+        'full_name': fullName,
+        'phone_number': phoneNumber,
+      },
+    );
+  }
+
+  Future<void> logout() async {
+    await _supabase.auth.signOut();
   }
 }

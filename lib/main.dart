@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:logging/logging.dart';
+import 'dart:developer';
 import 'models/auth_model.dart';
 import 'models/registration_model.dart';
 import 'models/accessibility_settings_model.dart';
@@ -9,6 +11,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    log('${record.level.name}: ${record.time}: ${record.loggerName}: ${record.message}');
+  });
+
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 

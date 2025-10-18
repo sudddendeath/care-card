@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/auth_model.dart';
 
 class IncidentReportScreen extends StatefulWidget {
   const IncidentReportScreen({super.key});
@@ -15,6 +18,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   final List<String> _selectedCategories = [];
+  bool _isLoading = false;
 
   final List<String> _categories = [
     'Harassment',
@@ -57,24 +61,79 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
     }
   }
 
-  void _submitReport() {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedCategories.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select at least one category.')),
-        );
-        return;
-      }
-      // TODO: Implement report submission logic
+  Future<void> _submitReport() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Incident report submitted.')),
+        const SnackBar(content: Text('Please select at least one category.')),
       );
-      _formKey.currentState!.reset();
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final auth = Provider.of<AuthModel>(context, listen: false);
+    final userId = auth.user?.id;
+
+    if (userId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User not authenticated.')));
       setState(() {
-        _selectedDate = DateTime.now();
-        _selectedTime = TimeOfDay.now();
-        _selectedCategories.clear();
+        _isLoading = false;
       });
+      return;
+    }
+
+    final incidentDate = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+
+    try {
+      await Supabase.instance.client.from('incident_reports').insert({
+        'user_id': userId,
+        'location': _locationController.text,
+        'details': _detailsController.text,
+        'incident_date': incidentDate.toIso8601String(),
+        'categories': _selectedCategories,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incident report submitted.')),
+        );
+        _formKey.currentState!.reset();
+        setState(() {
+          _selectedDate = DateTime.now();
+          _selectedTime = TimeOfDay.now();
+          _selectedCategories.clear();
+        });
+      }
+    } on PostgrestException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An unexpected error occurred: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -180,8 +239,14 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _submitReport,
-              child: const Text('Submit Report'),
+              onPressed: _isLoading ? null : _submitReport,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Submit Report'),
             ),
           ],
         ),
