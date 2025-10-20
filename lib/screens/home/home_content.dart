@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/auth_model.dart';
-import '../screens/pwd_registration_screen.dart';
-import '../screens/senior_registration_screen.dart';
+import '../../models/auth_model.dart';
+import '../pwd_registration_screen.dart';
+import '../senior_registration_screen.dart';
 
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});

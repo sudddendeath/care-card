@@ -5,7 +5,6 @@ import 'home/home_content.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -13,11 +12,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeContent(),
-    IncidentReportScreen(),
-    SettingsScreen(),
-  ];
+  Widget _buildBody() {
+    switch (_selectedIndex) {
+      case 0:
+        return const HomeContent();
+      case 1:
+        return const IncidentReportScreen();
+      case 2:
+        return const SettingsScreen();
+      default:
+        return const HomeContent();
+    }
+  }
 
   static const List<String> _widgetTitles = <String>[
     'Home',
@@ -38,7 +44,7 @@ class _HomePageState extends State<HomePage> {
         if (constraints.maxWidth < 600) {
           return Scaffold(
             appBar: AppBar(title: Text(_widgetTitles[_selectedIndex])),
-            body: _widgetOptions.elementAt(_selectedIndex),
+            body: _buildBody(),
             bottomNavigationBar: BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -83,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const VerticalDivider(thickness: 1, width: 1),
-                Expanded(child: _widgetOptions.elementAt(_selectedIndex)),
+                Expanded(child: _buildBody()),
               ],
             ),
           );

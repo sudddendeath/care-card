@@ -7,22 +7,57 @@ import 'models/registration_model.dart';
 import 'models/accessibility_settings_model.dart';
 import 'screens/home_page.dart';
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    log('${record.level.name}: ${record.time}: ${record.loggerName}: ${record.message}');
+    log(
+      '${record.level.name}: ${record.time}: ${record.loggerName}: ${record.message}',
+    );
   });
 
-  await dotenv.load(fileName: ".env");
-  WidgetsFlutterBinding.ensureInitialized();
+  // Debug: mark start of main
+  // ignore: avoid_print
+  print('main: starting initialization');
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+  // DEBUG FLAG: set to true to skip Supabase/dotenv initialization to
+  // determine whether Supabase is the source of a startup crash. Set
+  // back to false when you want normal behavior.
+  const bool kSkipSupabaseInit = true; // <-- toggle for debugging
+
+  // Load env variables and initialize Supabase in a safe try/catch so
+  // initialization errors don't crash the whole app. If initialization
+  // fails we'll print the error and continue (app can still run in a
+  // degraded mode).
+  if (!kSkipSupabaseInit) {
+    try {
+      // ignore: avoid_print
+      print('main: loading .env');
+      await dotenv.load(fileName: ".env");
+
+      // Initialize Supabase
+      // ignore: avoid_print
+      print('main: initializing Supabase');
+      await Supabase.initialize(
+        url: dotenv.env['SUPABASE_URL']!,
+        anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+      );
+      // ignore: avoid_print
+      print('main: Supabase initialized');
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('Supabase/dotenv initialization failed: $e\n$st');
+    }
+  } else {
+    // ignore: avoid_print
+    print('main: SKIPPING Supabase initialization (kSkipSupabaseInit=true)');
+  }
+
+  // ignore: avoid_print
+  print('main: calling runApp');
   runApp(const MyApp());
 }
 
@@ -31,6 +66,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: avoid_print
+    print('MyApp: build called');
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthModel()),
@@ -84,13 +122,17 @@ class MyApp extends StatelessWidget {
             labelStyle: const TextStyle(color: Colors.grey),
           ),
         ),
-        home: Consumer<AuthModel>(
-          builder: (context, auth, child) {
-            return auth.isAuthenticated
-                ? const HomePage()
-                : const LoginScreen();
-          },
-        ),
+        // For debugging: force start at LoginScreen so we can isolate crashes
+        // related to the Home UI. Change back to the Consumer<AuthModel>
+        // approach once you've diagnosed the issue.
+        // home: Consumer<AuthModel>(
+        //   builder: (context, auth, child) {
+        //     return auth.isAuthenticated
+        //         ? const HomePage()
+        //         : const LoginScreen();
+        //   },
+        // ),
+        home: const SplashScreen(),
       ),
     );
   }
