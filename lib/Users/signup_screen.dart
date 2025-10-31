@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/auth_model.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -32,7 +33,6 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: Use the new fields (_fullNameController.text, _phoneNumberController.text) in your signup logic.
     final auth = Provider.of<AuthModel>(context, listen: false);
     try {
       await auth.signup(
@@ -41,6 +41,8 @@ class _SignupScreenState extends State<SignupScreen> {
         _fullNameController.text,
         _phoneNumberController.text,
       );
+      // Sign out immediately to prevent auto-redirect to homescreen
+      auth.logout();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup successful! Please log in.')),
@@ -49,9 +51,18 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'An error occurred during signup.';
+        if (e is AuthException) {
+          if (e.message.contains('User already registered')) {
+            errorMessage =
+                'This email is already registered. Please try logging in instead.';
+          } else {
+            errorMessage = e.message;
+          }
+        }
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
       }
     }
   }

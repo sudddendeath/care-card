@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/auth_model.dart';
 import 'accessibility_settings_screen.dart';
-import 'login_screen.dart';
+import '../Users/login_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -104,9 +104,11 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsTile(
-    BuildContext context,
-      {required IconData icon, required String title, required VoidCallback onTap,})
-       {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),

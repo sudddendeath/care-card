@@ -11,9 +11,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Accessibility'),
-      ),
+      appBar: AppBar(title: const Text('Accessibility')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -26,7 +24,9 @@ class AccessibilitySettingsScreen extends StatelessWidget {
               ),
               child: SwitchListTile(
                 title: const Text('High Contrast Mode'),
-                subtitle: const Text('Increase contrast for better readability'),
+                subtitle: const Text(
+                  'Increase contrast for better readability',
+                ),
                 value: settings.isHighContrastModeEnabled,
                 onChanged: (value) => settings.toggleHighContrastMode(value),
                 secondary: const Icon(Icons.contrast),
@@ -56,7 +56,8 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                       max: 1.5,
                       divisions: 7,
                       label: settings.textSizeMultiplier.toStringAsFixed(1),
-                      onChanged: (value) => settings.setTextSizeMultiplier(value),
+                      onChanged: (value) =>
+                          settings.setTextSizeMultiplier(value),
                     ),
                     Center(
                       child: Text(

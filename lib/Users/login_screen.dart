@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/auth_model.dart';
-import 'home_page.dart';
+import '../widgets/home_page.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  Future<bool>? _loginFuture;
 
   @override
   void dispose() {
@@ -27,20 +29,57 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = Provider.of<AuthModel>(context, listen: false);
+    setState(() {
+      _isLoading = true;
+      _loginFuture = _performLogin();
+    });
+
     try {
-      await auth.login(_emailController.text, _passwordController.text);
-      if (mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      final success = await _loginFuture!;
+      if (success) {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid email or password')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${e.toString()}')),
+        );
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loginFuture = null;
+        });
+      }
+    }
+  }
+
+  Future<bool> _performLogin() async {
+    final auth = Provider.of<AuthModel>(context, listen: false);
+    return await auth.login(_emailController.text, _passwordController.text);
+  }
+
+  void _cancelLogin() {
+    if (_loginFuture != null) {
+      // Note: Futures cannot be cancelled directly, but we can set a flag
+      setState(() {
+        _isLoading = false;
+        _loginFuture = null;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login cancelled')));
     }
   }
 
@@ -61,11 +100,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Icon(
-                      Icons.favorite,
+                      Icons.medical_services,
                       size: 80,
                       color: theme.colorScheme.primary,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                     Text(
                       'Welcome to Care Card',
                       textAlign: TextAlign.center,
@@ -77,11 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Sign in to continue',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey,
-                      ),
+                      style: theme.textTheme.bodyLarge,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 48),
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(labelText: 'Email'),
@@ -119,11 +156,56 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     ElevatedButton(
-                      onPressed: _login,
-                      child: const Text('Login'),
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Text('Login'),
                     ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        // TODO: Implement forgot password functionality
+                      },
+                      child: const Text('Forgot Password?'),
+                    ),
+                    const SizedBox(height: 8),
+                    // Inline error message bound to AuthModel.lastError. We use
+                    // Consumer so the UI updates when the model notifies.
+                    Consumer<AuthModel>(
+                      builder: (context, auth, _) {
+                        final err = auth.lastError;
+                        if (err == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            err,
+                            key: const Key('login_error_text'),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      },
+                    ),
+                    if (_isLoading) ...[
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _cancelLogin,
+                        child: const Text('Cancel Login'),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
