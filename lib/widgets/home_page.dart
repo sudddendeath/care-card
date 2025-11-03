@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../screens/home_page.dart';
-import '../screens/incident_report_screen.dart';
-import '../screens/settings_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/incd_report/incident_report_screen.dart';
+import '../screens/settings/settings_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

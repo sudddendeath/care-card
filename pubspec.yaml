@@ -54,6 +54,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.10.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,7 +68,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/app_icon.png
     - assets/.env
+    - assets/app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -94,3 +97,19 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter launcher icons configuration. After placing your icon at
+# `assets/app_icon.png`, run the following commands in your project root:
+#
+# PowerShell (Windows):
+# Copy-Item "C:\\Users\\shins\\Downloads\\CC-removebg-preview.png" -Destination "assets\\app_icon.png"
+# flutter pub get
+# flutter pub run flutter_launcher_icons:main
+#
+# Or in one line:
+# Copy-Item "C:\\Users\\shins\\Downloads\\CC-removebg-preview.png" -Destination "assets\\app_icon.png"; flutter pub get; flutter pub run flutter_launcher_icons:main
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"

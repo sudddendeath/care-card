@@ -99,11 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.medical_services,
-                      size: 80,
-                      color: theme.colorScheme.primary,
-                    ),
+                    Image.asset('assets/app_icon.png', height: 80, width: 80),
                     const SizedBox(height: 32),
                     Text(
                       'Welcome to Care Card',
@@ -174,9 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implement forgot password functionality
-                      },
+                      onPressed: () {},
                       child: const Text('Forgot Password?'),
                     ),
                     const SizedBox(height: 8),
