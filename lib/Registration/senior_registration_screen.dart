@@ -19,6 +19,8 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _idNumberController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  String? _selectedSex; // Default value is null
   DateTime? _selectedBirthDate;
 
   @override
@@ -32,6 +34,11 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
     _addressController.text = initialData.address;
     _idNumberController.text = initialData.idNumber;
     _selectedBirthDate = initialData.birthDate;
+    if (_selectedBirthDate != null) {
+      _birthDateController.text = DateFormat(
+        'yyyy-MM-dd',
+      ).format(_selectedBirthDate!);
+    }
   }
 
   @override
@@ -39,6 +46,7 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
     _nameController.dispose();
     _addressController.dispose();
     _idNumberController.dispose();
+    _birthDateController.dispose();
     super.dispose();
   }
 
@@ -52,6 +60,7 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
     if (picked != null && picked != _selectedBirthDate) {
       setState(() {
         _selectedBirthDate = picked;
+        _birthDateController.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
@@ -68,6 +77,7 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
     final registration = Provider.of<RegistrationModel>(context, listen: false);
     registration.updateSeniorData(
       name: _nameController.text,
+      sex: _selectedSex,
       address: _addressController.text,
       idNumber: _idNumberController.text,
       birthDate: _selectedBirthDate,
@@ -136,12 +146,52 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedSex,
+                        decoration: const InputDecoration(labelText: 'Sex'),
+                        items: ['Male', 'Female'].map<DropdownMenuItem<String>>(
+                          (String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          },
+                        ).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedSex = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select your sex';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _addressController,
                         decoration: const InputDecoration(labelText: 'Address'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your address.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _birthDateController,
+                        decoration: const InputDecoration(
+                          labelText: 'Birth Date',
+                          suffixIcon: Icon(Icons.calendar_today),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select your birth date.';
                           }
                           return null;
                         },
@@ -159,25 +209,9 @@ class _SeniorRegistrationScreenState extends State<SeniorRegistrationScreen> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Birth Date'),
-                  trailing: Text(
-                    _selectedBirthDate == null
-                        ? 'Not set'
-                        : DateFormat.yMMMd().format(_selectedBirthDate!),
-                  ),
-                  onTap: () => _selectDate(context),
                 ),
               ),
               const SizedBox(height: 24),

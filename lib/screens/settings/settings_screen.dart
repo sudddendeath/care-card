@@ -1,3 +1,4 @@
+import 'package:care_card/screens/settings/account_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/auth_model.dart';
@@ -26,14 +27,13 @@ class SettingsScreen extends StatelessWidget {
                   context,
                   icon: Icons.person_outline,
                   title: 'Account Information',
-                  onTap: () {},
-                ),
-                const Divider(height: 1),
-                _buildSettingsTile(
-                  context,
-                  icon: Icons.notifications_outlined,
-                  title: 'Notification Preferences',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AccountInfoScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const Divider(height: 1),
                 _buildSettingsTile(
@@ -59,19 +59,6 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildSettingsTile(
-                  context,
-                  icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy Settings',
-                  onTap: () {},
-                ),
-                const Divider(height: 1),
-                _buildSettingsTile(
-                  context,
-                  icon: Icons.help_outline,
-                  title: 'Help & Support',
-                  onTap: () {},
-                ),
                 const Divider(height: 1),
                 _buildSettingsTile(
                   context,

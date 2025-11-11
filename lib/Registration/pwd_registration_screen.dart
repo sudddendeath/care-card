@@ -1,5 +1,6 @@
 import 'package:care_card/Users/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/registration_model.dart';
 import 'senior_registration_screen.dart';
@@ -19,6 +20,9 @@ class _PwdRegistrationScreenState extends State<PwdRegistrationScreen> {
   final _addressController = TextEditingController();
   final _idNumberController = TextEditingController();
   final _conditionController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  String? _selectedSex; // No default value
+  DateTime? _selectedBirthDate;
 
   @override
   void initState() {
@@ -31,6 +35,12 @@ class _PwdRegistrationScreenState extends State<PwdRegistrationScreen> {
     _addressController.text = initialData.address;
     _idNumberController.text = initialData.idNumber;
     _conditionController.text = initialData.condition;
+    _selectedBirthDate = initialData.birthDate;
+    if (_selectedBirthDate != null) {
+      _birthDateController.text = DateFormat(
+        'yyyy-MM-dd',
+      ).format(_selectedBirthDate!);
+    }
   }
 
   @override
@@ -39,7 +49,23 @@ class _PwdRegistrationScreenState extends State<PwdRegistrationScreen> {
     _addressController.dispose();
     _idNumberController.dispose();
     _conditionController.dispose();
+    _birthDateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectBirthDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedBirthDate) {
+      setState(() {
+        _selectedBirthDate = picked;
+        _birthDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -48,9 +74,11 @@ class _PwdRegistrationScreenState extends State<PwdRegistrationScreen> {
     final registration = Provider.of<RegistrationModel>(context, listen: false);
     registration.updatePwdData(
       name: _nameController.text,
+      sex: _selectedSex,
       address: _addressController.text,
       idNumber: _idNumberController.text,
       condition: _conditionController.text,
+      birthDate: _selectedBirthDate,
     );
 
     try {
@@ -125,12 +153,54 @@ class _PwdRegistrationScreenState extends State<PwdRegistrationScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedSex,
+                        decoration: const InputDecoration(labelText: 'Sex'),
+                        items: ['Male', 'Female'].map<DropdownMenuItem<String>>(
+                          (String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          },
+                        ).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedSex = newValue;
+                            });
+                          }
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select your sex';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _addressController,
                         decoration: const InputDecoration(labelText: 'Address'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your address.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _birthDateController,
+                        decoration: const InputDecoration(
+                          labelText: 'Birth Date',
+                          suffixIcon: Icon(Icons.calendar_today),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectBirthDate(context),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select your birth date.';
                           }
                           return null;
                         },

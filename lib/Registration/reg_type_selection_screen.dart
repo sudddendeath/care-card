@@ -1,4 +1,6 @@
+import 'package:care_card/models/registration_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'pwd_registration_screen.dart';
 import 'senior_registration_screen.dart';
 
@@ -14,74 +16,84 @@ class RegistrationTypeSelectionScreen extends StatelessWidget {
         child: Transform.translate(
           offset: const Offset(0, -50),
           child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 7),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 150,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const PwdRegistrationScreen(),
-                          ),
-                        );
-                      },
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.accessible, size: 40),
-                          SizedBox(height: 8),
-                          Text('PWD', textAlign: TextAlign.center),
-                        ],
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 7),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 150,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Provider.of<RegistrationModel>(context,
+                                  listen: false)
+                              .setRegistrationType(RegistrationType.pwd);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PwdRegistrationScreen(),
+                            ),
+                          );
+                        },
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.accessible, size: 40),
+                            SizedBox(height: 8),
+                            Text('PWD', textAlign: TextAlign.center),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SizedBox(
-                    height: 150,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const SeniorRegistrationScreen(),
-                          ),
-                        );
-                      },
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.elderly, size: 40),
-                          SizedBox(height: 8),
-                          Text('Senior', textAlign: TextAlign.center),
-                        ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: SizedBox(
+                      height: 150,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Provider.of<RegistrationModel>(context,
+                                  listen: false)
+                              .setRegistrationType(
+                                  RegistrationType.seniorCitizen);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SeniorRegistrationScreen(),
+                            ),
+                          );
+                        },
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.elderly, size: 40),
+                            SizedBox(height: 8),
+                            Text('Senior', textAlign: TextAlign.center),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const PwdRegistrationScreen(isBothFlow: true),
-                  ),
-                );
-              },
-              child: const Text('Register for Both'),
-            ),
-          ],
-        ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Provider.of<RegistrationModel>(context, listen: false)
+                      .setRegistrationType(RegistrationType.pwd);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const PwdRegistrationScreen(isBothFlow: true),
+                    ),
+                  );
+                },
+                child: const Text('Register for Both'),
+              ),
+            ],
+          ),
         ),
       ),
     );
